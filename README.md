@@ -1,259 +1,243 @@
 # CA Traffic Degrade Analysis Tool
 
-A VBA-based Excel automation tool for processing Carrier Aggregation (CA) traffic data, cell reports, and generating KPI summaries at both cell and site levels.
+A VBA-based Excel automation tool for processing Carrier Aggregation (CA) traffic data, aggregating cell-level KPIs, generating site-level summaries, and exporting formatted reports.
 
----
+## Overview
 
-## 📋 Overview
+The tool automates the following tasks:
 
-This tool automates the process of:
-- Importing CA query data and Cell Report data
-- Aggregating KPIs at the cell level
-- Generating site-level summaries
-- Highlighting zero KPI values for quick issue identification
-- Exporting results to a separate workbook
+- Imports CA query data and Cell Report data.
+- Aggregates KPI metrics by cell, including the oldest and latest dates.
+- Tracks the ISO week range covered by each cell's data.
+- Creates site-level summaries by CA category and frequency band.
+- Highlights zero KPI values to help identify potential issues.
+- Exports the generated reports to a separate Excel workbook.
 
----
+## Features
 
-## ✨ Features
+- **Multi-file import:** Select the CA data file and Cell Report file in one file-selection process.
+- **Cell-level aggregation:** Groups `RAW DATA` records by cell name.
+- **KPI period tracking:** Displays the ISO week range from the oldest to the latest date for each cell.
+- **Site-level summary:** Summarizes results by site and band (`L1800`, `L2100`, and `L900`).
+- **Zero KPI highlighting:** Highlights zero values in red and bold, with exceptions for KPIs that do not apply to a CA category.
+- **Formatted output:** Applies header styling, borders, centered values, AutoFit column widths, and hidden gridlines.
+- **Automatic export:** Saves the generated reports to a dated Excel workbook.
 
-- **Multi-file Import**: Select both CA and Cell Report files in one go
-- **Cell-Level Aggregation**: Groups RAW DATA by cell name with min/max date tracking
-- **KPI Period Tracking**: Shows week numbers from oldest to latest RAW DATA date per cell
-- **Site Summary**: Aggregates cell data by site and band (L1800, L2100, L900)
-- **Zero KPI Highlighting**: Automatically highlights zero values in red (with CA category logic)
-- **Formatted Output**: Professional formatting with headers, borders, and auto-fit columns
-- **Export Function**: Saves results to a dated Excel file
+## Requirements
 
----
+- Microsoft Excel for Windows with macros enabled.
+- A master workbook saved as an Excel macro-enabled workbook (`.xlsm`).
+- The required `Control` and `Tracker` worksheets.
+- CA data and Cell Report source files in a supported Excel format.
 
-## 📁 Required Workbook Structure
+## Required Workbook Structure
 
-Your master workbook **must** contain these sheets (case-insensitive):
+The master workbook must contain these worksheets. Sheet names are matched without regard to case.
 
-| Sheet Name   | Purpose                          |
-|--------------|----------------------------------|
-| `Control`    | Control parameters (required)    |
-| `Tracker`    | Site-to-CA Category mapping      |
+| Worksheet | Purpose |
+|---|---|
+| `Control` | Required control worksheet. |
+| `Tracker` | Maps Site ID to CA Category. |
 
-The tool will create these sheets automatically:
+The tool creates or populates these generated worksheets:
 
-| Sheet Name                | Purpose                              |
-|---------------------------|--------------------------------------|
-| `RAW DATA`                | Imported CA query data               |
-| `Cell Report`             | Imported Cell Report data            |
-| `Cell Level Detail KPI`   | Aggregated cell-level KPIs           |
-| `Site-Summary`            | Site-level summary by band           |
+| Worksheet | Purpose |
+|---|---|
+| `RAW DATA` | Imported CA query data. |
+| `Cell Report` | Imported Cell Report data. |
+| `Cell Level Detail KPI` | Aggregated cell-level KPIs and KPI period. |
+| `Site-Summary` | Site-level summary by frequency band. |
 
----
+> Keep the `Control` and `Tracker` worksheets in the master workbook. The `DeleteAllSheet` macro is intended to clear generated worksheets while preserving these required sheets.
 
-## 📥 Input File Requirements
+## Input File Requirements
 
-### File Naming Convention
+### File naming convention
 
-| File Type      | Filename Must Contain | Example                          |
-|----------------|-----------------------|----------------------------------|
-| CA Data        | `ca`                  | `CA_Query_2025.xlsx`             |
-| Cell Report    | `cell`                | `Cell_Report_Feb2025.xlsx`       |
+The import process identifies files by keywords in their names.
 
-### CA Data File Columns (Expected)
+| File type | Filename must contain | Example |
+|---|---|---|
+| CA data | `ca` | `CA_Query_2025.xlsx` |
+| Cell Report | `cell` | `Cell_Report_Feb2025.xlsx` |
 
-| Column | Header              |
-|--------|---------------------|
-| 1      | Cell Name           |
-| 4      | Site ID             |
-| 8-16   | KPI Metrics         |
-| 17     | Date                |
-| 20     | Additional KPI      |
+Use filenames that clearly identify each file type.
 
-### Cell Report File Columns (Expected)
+### CA data file
 
-| Column | Header              |
-|--------|---------------------|
-| 9      | Cell Name           |
-| 18     | Availability Status |
+The source data is expected to contain the following fields in these columns:
 
-### Tracker Sheet Columns (Required)
+| Column | Expected content |
+|---|---|
+| A (1) | Cell Name |
+| D (4) | Site ID |
+| H:P (8–16) | KPI metrics |
+| Q (17) | Date |
+| T (20) | Additional KPI |
 
-| Column | Header        |
-|--------|---------------|
-| A      | Site ID       |
-| D      | CA Category   |
+### Cell Report file
 
----
+| Column | Expected content |
+|---|---|
+| I (9) | Cell Name |
+| R (18) | Availability Status |
 
-## 🚀 Usage Instructions
+### Tracker worksheet
 
-### Step 1: Prepare Master Workbook
+| Column | Required content |
+|---|---|
+| A | Site ID |
+| D | CA Category |
 
-1. Save this workbook with the VBA code
-2. Ensure `Control` and `Tracker` sheets exist
-3. Populate `Tracker` with Site ID → CA Category mappings
+Make sure the Site ID values in `Tracker` match the identifiers used by the source data.
 
-### Step 2: Run the Import Process
+## How to Use
 
-1. Open the workbook
-2. Press `ALT + F11` to open VBA Editor
-3. Press `F5` or run `ImprotReportData` subroutine
-4. **OR** assign a button to `ImprotReportData` for easier access
+### 1. Prepare the master workbook
 
-### Step 3: Select Files
+1. Open the Excel workbook containing the VBA code.
+2. Save it as an Excel Macro-Enabled Workbook (`.xlsm`).
+3. Confirm that the `Control` and `Tracker` worksheets exist.
+4. Populate the `Tracker` worksheet with the Site ID-to-CA Category mappings.
 
-- A file dialog will appear
-- Select **both** CA data file and Cell Report file (multi-select enabled)
-- Click **Open**
+### 2. Run the import process
 
-### Step 4: Review Output
+1. Enable macros if Excel prompts you.
+2. Press `Alt + F11` to open the VBA Editor.
+3. Locate the `ImprotReportData` procedure.
+4. Place the cursor inside the procedure and press `F5` to run it.
 
-| Sheet                   | Description                                      |
-|-------------------------|--------------------------------------------------|
-| `Cell Level Detail KPI` | Per-cell KPIs with week range from RAW DATA      |
-| `Site-Summary`          | Site-level summary by band with issue tracking   |
+Alternatively, assign the `ImprotReportData` macro to a worksheet button for easier access.
 
-### Step 5: Export Results
+### 3. Select the source files
 
-- Results are automatically exported to:  
-  `Export CA Cell Vs Site Level KPIs Result - DD-MM-YYYY.xlsx`
-- Saved in the same folder as the master workbook
+1. When the file dialog opens, select both the CA data file and the Cell Report file.
+2. Confirm that the filenames contain the expected `ca` and `cell` keywords.
+3. Click **Open** to start processing.
 
----
+### 4. Review the output
 
-## 📊 Output Sheet Details
+Review the generated worksheets:
+
+- **`Cell Level Detail KPI`** — cell-level KPI results, availability status, CA category, KPI period, and zero-KPI issue details.
+- **`Site-Summary`** — site-level results by band, overall status, and issue details.
+
+### 5. Export the report
+
+The tool exports the results to a dated Excel workbook in the same folder as the saved master workbook.
+
+Expected filename pattern:
+
+```text
+Export CA Cell Vs Site Level KPIs Result - DD-MM-YYYY.xlsx
+```
+
+Save the master workbook before exporting so Excel has a destination folder.
+
+## Output Sheet Details
 
 ### Cell Level Detail KPI
 
-| Column | Header              | Description                              |
-|--------|---------------------|------------------------------------------|
-| A      | Site                | Site ID (extracted from Cell Name)       |
-| B      | Band                | L900 / L1800 / L2100 / Indoor            |
-| C      | Availability Status | From Cell Report file                    |
-| D      | CA Category         | From Tracker sheet lookup                |
-| E-Q    | KPI Metrics         | Aggregated values (Sum or Average)       |
-| Q      | KPI Period          | **Week X ~ Week Y (dd-mmm-yyyy to dd-mmm-yyyy)** |
-| R      | CA KPI Status       | List of KPIs with zero values            |
+| Column(s) | Field | Description |
+|---|---|---|
+| A | Site | Site identifier extracted from the Cell Name. |
+| B | Band | Frequency band, such as `L900`, `L1800`, `L2100`, or `Indoor`. |
+| C | Availability Status | Availability information from the Cell Report file. |
+| D | CA Category | CA category looked up from the `Tracker` worksheet. |
+| E onward | KPI metrics | Aggregated KPI values. The aggregation method depends on the KPI. |
+| KPI Period field | KPI Period | Week range and oldest/latest dates covered by the cell's raw records. |
+| Final status field | CA KPI Status | List of KPI fields with zero values, subject to CA category exceptions. |
 
-**KPI Period Example:**
+**Note:** Confirm the exact KPI column positions in the current VBA code if you change the source data layout. The KPI Period and CA KPI Status descriptions above refer to their logical fields; their physical column positions depend on the final output layout.
+
+Example KPI period strings:
+
 - Same year: `Week 8 ~ Week 12 (17-Feb-2025 to 21-Mar-2025)`
 - Across years: `Week 52 2024 ~ Week 2 2025 (23-Dec-2024 to 10-Jan-2025)`
 
 ### Site-Summary
 
-| Column | Header            | Description                        |
-|--------|-------------------|------------------------------------|
-| A      | Site ID           | Site identifier                    |
-| B      | CA Solution       | CA Category from Tracker           |
-| C-E    | L1800/L2100/L900  | Achieve / Not Achieve per band     |
-| F      | Remark            | Overall site status                |
-| G      | Issue             | All KPI issues for the site        |
-| H-J    | Band KPI Issues   | Issues broken down by band         |
+| Column(s) | Field | Description |
+|---|---|---|
+| A | Site ID | Site identifier. |
+| B | CA Solution | CA Category from the `Tracker` worksheet. |
+| C–E | Band status | Achievement status for `L1800`, `L2100`, and `L900`. |
+| F | Remark | Overall site status. |
+| G | Issue | Combined KPI issues for the site. |
+| H–J | Band KPI Issues | KPI issues separated by band. |
 
----
+## Available Macros
 
-## 🔧 Available Macros
+| Macro | Description |
+|---|---|
+| `ImprotReportData` | Main process: imports source files, aggregates KPIs, formats output, and exports results. |
+| `AggregateByCell` | Rebuilds the cell-level detail worksheet. |
+| `CreateSiteSummary` | Rebuilds the site-level summary. |
+| `HighlightZeros` | Reapplies zero-KPI highlighting. |
+| `FormatAllSheets` | Reapplies formatting to the worksheets handled by the macro. |
+| `ExportCaCellVsSiteKpis` | Exports the CA cell- and site-level KPI results to a new workbook. |
+| `DeleteAllSheet` | Clears generated worksheets while keeping `Control` and `Tracker`. |
 
-| Macro Name              | Description                                  |
-|-------------------------|----------------------------------------------|
-| `ImprotReportData`      | Main process: import, aggregate, export      |
-| `AggregateByCell`       | Rebuild cell-level detail only               |
-| `CreateSiteSummary`     | Rebuild site summary only                    |
-| `HighlightZeros`        | Re-apply zero KPI highlighting               |
-| `FormatAllSheets`       | Re-apply formatting to all sheets            |
-| `ExportCaCellVsSiteKpis`| Export results to new workbook               |
-| `DeleteAllSheet`        | Clear all generated sheets (keep Control/Tracker) |
+> The macro name `ImprotReportData` is intentionally shown as provided. If you rename it in the VBA editor, update any assigned buttons or documentation references as well.
 
----
+## KPI Period Logic
 
-## ⚙️ KPI Period Logic (Week Number Tracking)
+For each cell, the tool scans the matching records in `RAW DATA` and determines:
 
-For each cell, the tool scans all RAW DATA rows and tracks:
+1. **Oldest date:** The minimum date recorded for that cell.
+2. **Latest date:** The maximum date recorded for that cell.
+3. **ISO week numbers:** Week numbers calculated using the ISO standard.
+4. **ISO week-year:** Correctly handles dates near the end or beginning of a calendar year.
 
-1. **Oldest Date**: Minimum date found for that cell
-2. **Latest Date**: Maximum date found for that cell
-3. **Week Numbers**: ISO week numbers (Monday start, 4-day rule)
-4. **ISO Week Year**: Handles year boundaries correctly
+The resulting KPI Period is formatted as:
 
-**Formula:**
+```text
+Week [Oldest] ~ Week [Latest] (dd-mmm-yyyy to dd-mmm-yyyy)
 ```
-KPI Period = Week [Oldest] ~ Week [Latest] (dd-mmm-yyyy to dd-mmm-yyyy)
-```
 
-**Functions Used:**
-- `WeekNumber(d)` - ISO week number
-- `IsoWeekYear(d)` - ISO week year (Thursday rule)
-- `FormatKpiPeriod(oldDate, latestDate)` - Formatted output string
+The VBA helper functions are:
 
----
+- `WeekNumber(d)` — returns the ISO week number.
+- `IsoWeekYear(d)` — returns the ISO week-year.
+- `FormatKpiPeriod(oldDate, latestDate)` — creates the formatted KPI period text.
 
-## 🎨 Formatting Rules
+The ISO week standard uses Monday as the first day of the week and the rule that Week 1 is the week containing the first Thursday of the year.
 
-| Element           | Style                                      |
-|-------------------|--------------------------------------------|
-| Headers           | Bold, White text, Dark Blue background     |
-| Data Cells        | Calibri 11pt, Centered, Borders            |
-| Zero KPI (F:P)    | **Red Bold** (unless CA category ignores)  |
-| Non-Zero KPI      | Black, Normal                              |
-| Column Width      | AutoFit                                    |
-| Gridlines         | Hidden                                     |
+## Formatting Rules
 
----
+| Element | Format |
+|---|---|
+| Headers | Bold white text on a dark blue background. |
+| Data cells | Calibri 11 pt, centered, with borders. |
+| Zero KPI values | Red and bold in the applicable KPI columns, except for ignored KPI patterns. |
+| Non-zero KPI values | Black, normal text. |
+| Column widths | AutoFit. |
+| Gridlines | Hidden. |
 
-## ⚠️ Zero KPI Highlighting Logic
+## Zero KPI Highlighting Logic
 
-Zero values in columns F-P are highlighted **RED BOLD** unless:
+Zero values in the applicable KPI range (described as columns F–P in the original configuration) are highlighted **red and bold**, unless the KPI is not applicable to the cell's CA category.
 
-| CA Category | Ignored KPI Pattern                        |
-|-------------|--------------------------------------------|
-| 2CC         | 3CC AvgUser, 3CC Throughput                |
-| 3CC         | 2CC AvgUser, 2CC Throughput                |
+| CA Category | KPI patterns ignored |
+|---|---|
+| `2CC` | `3CC AvgUser`, `3CC Throughput` |
+| `3CC` | `2CC AvgUser`, `2CC Throughput` |
 
-This prevents false positives when a KPI is not applicable to the CA configuration.
+This exception logic helps avoid false-positive issue flags for KPIs that are not relevant to the configured CA solution.
 
----
+## Troubleshooting
 
-## 🐛 Troubleshooting
+| Problem | Suggested solution |
+|---|---|
+| “Select a CA data file and Cell Report file” | Select both source files and ensure their filenames contain `ca` and `cell`, respectively. |
+| “Workbook must contain Control and Tracker” | Add the required worksheets to the master workbook. |
+| “No data rows in RAW DATA” | Confirm the CA source file contains data rows starting from row 2. |
+| “Cell Name not found” | Verify that the Cell Name field is in the expected source column. |
+| “Date not found” | Confirm that the CA data file has valid dates in column Q. |
+| Export fails | Save the master workbook before running the export macro, and check folder permissions. |
+| Week numbers are incorrect | Ensure the source dates are valid Excel dates or are formatted in a date format the VBA code can parse. |
+| CA category is missing | Check that the site's ID matches a value in column A of `Tracker` and that the category is in column D. |
 
-| Issue                              | Solution                                      |
-|------------------------------------|-----------------------------------------------|
-| "Select a CA data file and Cell Report file" | Ensure filenames contain `ca` and `cell`     |
-| "Workbook must contain Control and Tracker"  | Create these sheets before running            |
-| "No data rows in RAW DATA"         | Check source file has data from row 2 onwards |
-| "Cell Name not found"              | Verify column headers in source files         |
-| "Date not found"                   | Ensure Date column exists in CA file          |
-| Export fails                       | Save master workbook before exporting         |
-| Week numbers incorrect             | Dates must be valid Excel date format         |
+## License
 
----
-
-## 📝 Notes
-
-- **ISO Week Standard**: Uses Monday as first day, first 4-day rule for Week 1
-- **Date Parsing**: Handles string, numeric, and date variants
-- **Case-Insensitive**: Sheet names and lookups are case-insensitive
-- **Error Handling**: Most errors show descriptive messages
-- **Screen Updating**: Disabled during processing for performance
-
----
-
-## 📄 Version History
-
-| Version | Date       | Changes                              |
-|---------|------------|--------------------------------------|
-| 1.0     | 2025-01-01 | Initial release                      |
-| 1.1     | 2025-03-01 | Added KPI Period with week numbers   |
-| 1.2     | 2025-03-01 | ISO week year support for cross-year |
-
----
-
-## 📞 Support
-
-For issues or enhancements:
-1. Check error messages in message boxes
-2. Verify file naming conventions
-3. Ensure Tracker sheet has correct Site-to-CA mappings
-4. Review RAW DATA column headers match expected format
-
----
-
-## ⚖️ License
-
-Internal use only. Not for distribution outside organization.
+**Internal use only.** Do not distribute outside the organization without authorization.
